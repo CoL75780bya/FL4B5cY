@@ -1,0 +1,110 @@
+# Meshery Demo Adapter Configuration
+
+# Basic adapter information
+name: "demo-mesh"
+version: "v1.0.0"
+mesh-name: "Demo Mesh"
+mesh-version: "v1.0.0"
+
+# Supported operations that Meshery can perform with this adapter
+# Each operation here will show up as a button/option in Meshery UI
+operations:
+  # Install operation - Sets up the demo mesh
+  install:
+    name: "Install Demo Mesh"
+    description: "Install the demo mesh control and data plane"
+    versions:
+      - "v1.0.0"
+    templates:
+      - name: "demo-mesh-install"
+        version: "v1.0.0"
+        # In a real adapter, this would contain Kubernetes YAML manifests
+        content: |
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: demo-mesh-system
+          ---
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: demo-mesh-controller
+            namespace: demo-mesh-system
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: demo-mesh-controller
+            template:
+              metadata:
+                labels:
+                  app: demo-mesh-controller
+              spec:
+                containers:
+                - name: controller
+                  image: demo-mesh:v1.0.0
+                  ports:
+                  - containerPort: 8080
+
+  # Uninstall operation - Removes the demo mesh
+  uninstall:
+    name: "Uninstall Demo Mesh"
+    description: "Remove the demo mesh from the cluster"
+    versions:
+      - "v1.0.0"
+
+  # Custom operation - Gets status
+  status:
+    name: "Get Demo Mesh Status"
+    description: "Check the current status of the demo mesh"
+    versions:
+      - "v1.0.0"
+
+# Adapter capabilities
+capabilities:
+  - name: "Installation Management"
+    description: "Install and uninstall demo mesh"
+  - name: "Status Monitoring"
+    description: "Monitor demo mesh health and status"
+  - name: "Configuration Management"
+    description: "Manage demo mesh configuration"
+
+# Sample applications that can be deployed with this mesh
+# These show up in Meshery as example workloads
+sample-applications:
+  - name: "Demo App"
+    description: "A simple demo application to test the mesh"
+    manifest: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: demo-app
+        namespace: default
+      spec:
+        replicas: 2
+        selector:
+          matchLabels:
+            app: demo-app
+        template:
+          metadata:
+            labels:
+              app: demo-app
+          spec:
+            containers:
+            - name: demo-app
+              image: nginx:latest
+              ports:
+              - containerPort: 80
+      ---
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: demo-app-service
+        namespace: default
+      spec:
+        selector:
+          app: demo-app
+        ports:
+        - port: 80
+          targetPort: 80
+        type: ClusterIP
